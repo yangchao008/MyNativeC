@@ -5,12 +5,16 @@
 
 using namespace std;
 
-extern "C" JNIEXPORT jstring JNICALL
+string hello(){
+    string hello = "Hello from C++";
+    return hello;
+}
+
+extern "C" JNIEXPORT string JNICALL
 Java_com_chao_mynativec_MainActivity_stringFromJNI(
         JNIEnv* env,
         jobject /* this */) {
-    string hello = "Hello from C++";
-    return env->NewStringUTF(hello.c_str());
+    return hello();
 }
 
 extern "C" JNIEXPORT jint JNICALL
