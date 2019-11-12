@@ -10,11 +10,11 @@ string hello(){
     return hello;
 }
 
-extern "C" JNIEXPORT string JNICALL
+extern "C" JNIEXPORT jstring JNICALL
 Java_com_chao_mynativec_MainActivity_stringFromJNI(
         JNIEnv* env,
         jobject /* this */) {
-    return hello();
+    return env -> NewStringUTF("Hello from C++");
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -34,95 +34,125 @@ Java_com_chao_mynativec_MainActivity_getLowest(
     return lowest;
 }
 
+jintArray selection_sort3(JNIEnv* env,jintArray arr);
 jintArray selection_sort2(JNIEnv* env,jintArray arr);
 jintArray selection_sort(JNIEnv* env,jintArray arr);
 
+list<int> real_sort(list<int> list);
+
 extern "C" JNIEXPORT jintArray JNICALL
 Java_com_chao_mynativec_MainActivity_sort(JNIEnv* env,jobject,jintArray arr) {
-    list<int> lt;
-    lt.push_back(2);
-    lt.push_front(1);
-    return selection_sort2(env,arr);
+    return selection_sort3(env,arr);
 }
 
 jintArray selection_sort(JNIEnv* env,jintArray a){
     jint* arr = env->GetIntArrayElements(a, NULL);
-    jsize size2 = env->GetArrayLength(a);
-    jsize size = size2;
+    jsize size = env->GetArrayLength(a);
 
-    for (int i = 1; i < size2; ++i) {
-        if (arr[i] == NULL){
-            size = i + 1;
-            break;
-        }
+    list<int> b;
+    for (int i = 0; i < size; ++i) {
+        int value = arr[i];
+        b.push_front(value);
     }
+    list<int> e = real_sort(b);
 
-    if(size < 2){
-        env->ReleaseIntArrayElements(a, arr, JNI_COMMIT);
+    list<int>::iterator i_;
+    int d_index = 0;
+    for(i_ = e.begin();i_ != e.end();++i_){
+        arr[d_index] = int(*i_);
+        d_index++;
+    }
+    env->ReleaseIntArrayElements(a, arr, JNI_COMMIT);
+    return a;
+//    if(size < 2){
+//        env->ReleaseIntArrayElements(a, arr, JNI_COMMIT);
+//        return a;
+//    } else {
+//        int l = arr[0];
+//
+//        list<int> b,c;
+//        list<int>::iterator i_;
+//        for (int i = 1; i < size; ++i) {
+//            int value = arr[i];
+//            if (value > l){
+//                c.push_front(value);
+//            } else{
+//                b.push_front(value);
+//            }
+//        }
+//        env->ReleaseIntArrayElements(a, arr, JNI_COMMIT);
+//        int new_size = sizeof(b) + sizeof(c) + 1;
+//        jintArray d = env->NewIntArray(new_size);
+//        int* d_arr = env->GetIntArrayElements(d, NULL);
+//        int d_index = 0;
+//        for(i_ = b.begin();i_ != b.end();++i_){
+//            d_arr[d_index] = int(*i_);
+//            d_index++;
+//        }
+//        d_arr[d_index] = l;
+//        d_index++;
+//        for(i_ = c.begin();i_ != c.end();i_++){
+//            d_arr[d_index] = int(*i_);
+//            d_index++;
+//        }
+//        env->ReleaseIntArrayElements(d, d_arr, JNI_COMMIT);
+//        return d;
+//    }
+}
+
+list<int> real_sort(list<int> a) {
+    int size = sizeof(a);
+    if (size < 2){
         return a;
-    } else {
-        jint l = arr[0];
+    } else{
+        list<int> b,c;
+        list<int>::iterator i_;
 
-        jintArray b = env->NewIntArray(size);
-        jintArray c = env->NewIntArray(size);
-
-        jint* pb = env->GetIntArrayElements(b, NULL);
-        jint* pc = env->GetIntArrayElements(c, NULL);
-        for (int i = 1; i < size; ++i) {
-            pb[i] = NULL;
-            pc[i] = NULL;
-        }
-
-        int bIndex = 0,cIndex = 0,dIndex = 0;
-        for (int i = 1; i < size; ++i) {
-            if (arr[i] == NULL){
-                continue;
-            }
-            if (arr[i] >= l){
-                pb[bIndex] = arr[i];
-                bIndex++;
+        int stand = int(*a.begin());
+        for(i_ = ++a.begin();i_ != a.end();i_++){
+            int value = int(*i_);
+            if (value > stand){
+                b.push_front(value);
             } else {
-                pc[cIndex] = arr[i];
-                cIndex++;
+                c.push_front(value);
             }
         }
+        list<int> e = real_sort(b);
+        list<int> f = real_sort(c);
 
-        env->ReleaseIntArrayElements(a, arr, JNI_COMMIT);
-        env->ReleaseIntArrayElements(b, pb, JNI_COMMIT);
-        env->ReleaseIntArrayElements(c, pc, JNI_COMMIT);
-
-        jintArray e = selection_sort(env,b);
-        jintArray f = selection_sort(env,c);
-
-
-        jint* pe = env->GetIntArrayElements(e, NULL);
-        jint* pf = env->GetIntArrayElements(f, NULL);
-
-        jintArray d = env->NewIntArray(size);
-        jint* pd = env->GetIntArrayElements(d, NULL);
-
-        for (int i = 1; i < size; ++i) {
-            if (pe[i] == NULL){
-                continue;
-            }
-            pd[dIndex] = pe[i];
-            dIndex++;
+        list<int> d;
+        for(i_ = e.begin();i_ != e.end();++i_){
+            int value = int(*i_);
+            d.push_front(value);
         }
-        pd[dIndex] = l;
-        dIndex++;
-        for (int i = 1; i < size; ++i) {
-            if (pf[i] == NULL){
-                continue;
-            }
-            pd[dIndex] = pf[i];
-            dIndex++;
+        d.push_front(stand);
+        for(i_ = f.begin();i_ != f.end();i_++){
+            int value = int(*i_);
+            d.push_front(value);
         }
-
-        env->ReleaseIntArrayElements(d, pd, JNI_COMMIT);
-        env->ReleaseIntArrayElements(e, pe, JNI_COMMIT);
-        env->ReleaseIntArrayElements(f, pf, JNI_COMMIT);
         return d;
     }
+}
+
+jintArray selection_sort3(JNIEnv* env,jintArray a){
+    jint* arr = env->GetIntArrayElements(a, NULL);
+    jsize size = env->GetArrayLength(a);
+
+    list<int> b;
+    for (int i = 0; i < size; ++i) {
+        int value = arr[i];
+        b.push_front(value);
+    }
+    b.sort();
+    b.reverse();
+    list<int>::iterator i_;
+    int d_index = 0;
+    for(i_ = b.begin();i_ != b.end();++i_){
+        arr[d_index] = int(*i_);
+        d_index++;
+    }
+    env->ReleaseIntArrayElements(a, arr, JNI_COMMIT);
+    return a;
 }
 
 jintArray selection_sort2(JNIEnv* env,jintArray arr) {
